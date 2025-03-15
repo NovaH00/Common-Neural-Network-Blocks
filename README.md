@@ -57,14 +57,6 @@ print(output.shape)  # Expected: torch.Size([1, 256, 32, 32])
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-## License
-[MIT](https://choosealicense.com/licenses/mit/)
-
 ## Contact
 For questions or collaboration, feel free to reach out.
-
----
-
-Let me know if you'd like to add more sections or details!
 
