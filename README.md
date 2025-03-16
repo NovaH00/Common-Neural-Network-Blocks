@@ -1,4 +1,4 @@
-# Architecture Blocks
+# Block Architectures 
 
 This module contains various neural network blocks inspired by popular architectures such as ResNet, ConvNeXt, Squeeze-and-Excitation, Bottleneck Transformer, DenseNet, Inception, and Transformer Encoder. Each block is implemented as a PyTorch `nn.Module` and can be used to build more complex neural network models.
 
