@@ -1,6 +1,6 @@
-# Block Architectures 
+# Common Neural Network Blocks 
 
-This module contains various neural network blocks inspired by popular architectures such as ResNet, ConvNeXt, Squeeze-and-Excitation, Bottleneck Transformer, DenseNet, Inception, and Transformer Encoder. Each block is implemented as a PyTorch `nn.Module` and can be used to build more complex neural network models.
+This module contains various neural network blocks inspired by popular architectures such as ResNet, ConvNeXt, Squeeze-and-Excitation, Bottleneck Transformer, DenseNet, Inception, Transformer Encoder, and CBAM (Convolutional Block Attention Module). Each block is implemented as a PyTorch `nn.Module` and can be used to build more complex neural network models.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ A residual learning unit from the ResNet architecture. It consists of three conv
 **Usage:**
 
 ```python
-from architechture import ResNetBlock
+from common_neural_network_blocks import ResNetBlock
 import torch
 
 resnet_block = ResNetBlock(input_channel=64, output_channel=256)
@@ -34,7 +34,7 @@ Inspired by the ConvNeXt architecture, this block simplifies the ResNet-style de
 **Usage:**
 
 ```python
-from architechture import ConvNeXtBlock
+from common_neural_network_blocks import ConvNeXtBlock
 import torch
 
 convnext_block = ConvNeXtBlock(input_channel=64, output_channel=96)
@@ -49,7 +49,7 @@ A Squeeze-and-Excitation (SE) Block that recalibrates feature maps by modeling c
 **Usage:**
 
 ```python
-from architechture import SEBlock
+from common_neural_network_blocks import SEBlock
 import torch
 
 se_block = SEBlock(channels=64)
@@ -64,7 +64,7 @@ Combines convolutional layers with self-attention mechanisms to capture both loc
 **Usage:**
 
 ```python
-from architechture import BottleneckTransformerBlock
+from common_neural_network_blocks import BottleneckTransformerBlock
 import torch
 
 block = BottleneckTransformerBlock(input_channel=64, hidden_dim=64, heads=4, output_channel=256)
@@ -79,7 +79,7 @@ Implements a Dense Block from the DenseNet architecture, where each layer receiv
 **Usage:**
 
 ```python
-from architechture import DenseBlock
+from common_neural_network_blocks import DenseBlock
 import torch
 
 block = DenseBlock(input_channel=64, growth_rate=32, num_layers=4)
@@ -94,7 +94,7 @@ Implements an Inception Block, inspired by the Inception architecture. This bloc
 **Usage:**
 
 ```python
-from architechture import InceptionBlock
+from common_neural_network_blocks import InceptionBlock
 import torch
 
 block = InceptionBlock(input_channel=64, output_channel=256)
@@ -109,7 +109,7 @@ Implements a single Transformer Encoder Block as proposed in "Attention Is All Y
 **Usage:**
 
 ```python
-from architechture import TransformerEncoderBlock
+from common_neural_network_blocks import TransformerEncoderBlock
 import torch
 
 encoder_block = TransformerEncoderBlock(input_dim=512, num_heads=8)
@@ -117,12 +117,60 @@ x = torch.randn(32, 10, 512)  # (batch_size, sequence_length, input_dim)
 output = encoder_block(x)
 ```
 
+### ChannelAttention
+
+Channel Attention Module (CAM) from CBAM that implements channel attention by aggregating spatial information through both average and max pooling, then using a shared MLP to compute channel-wise attention weights.
+
+**Usage:**
+
+```python
+from common_neural_network_blocks import ChannelAttention
+import torch
+
+channel_attn = ChannelAttention(64, ratio=16)
+x = torch.randn(1, 64, 32, 32)
+attention_weights = channel_attn(x)  # Output shape: (1, 64, 1, 1)
+```
+
+### SpatialAttention
+
+Spatial Attention Module (SAM) from CBAM that implements spatial attention by aggregating channel information through both average and max pooling along the channel dimension, then using a convolutional layer to compute spatial attention weights.
+
+**Usage:**
+
+```python
+from common_neural_network_blocks import SpatialAttention
+import torch
+
+spatial_attn = SpatialAttention(kernel_size=7)
+x = torch.randn(1, 64, 32, 32)
+attention_weights = spatial_attn(x)  # Output shape: (1, 1, 32, 32)
+```
+
+### CBAM
+
+Convolutional Block Attention Module (CBAM) that combines both channel and spatial attention to improve feature representation. It sequentially applies channel attention followed by spatial attention to refine feature maps.
+
+**Usage:**
+
+```python
+from common_neural_network_blocks import CBAM
+import torch
+
+cbam = CBAM(64, ratio=16, kernel_size=7)
+x = torch.randn(1, 64, 32, 32)
+output = cbam(x)  # Output shape: (1, 64, 32, 32) - same as input but with attention applied
+```
+
 ## Combining Blocks
 
 Here is an example of how to combine multiple blocks to create a more complex neural network model:
 
 ```python
-from architechture import ResNetBlock, ConvNeXtBlock, SEBlock, BottleneckTransformerBlock, DenseBlock, InceptionBlock, TransformerEncoderBlock
+from common_neural_network_blocks import (
+    ResNetBlock, ConvNeXtBlock, SEBlock, BottleneckTransformerBlock, 
+    DenseBlock, InceptionBlock, TransformerEncoderBlock, CBAM
+)
 import torch
 import torch.nn as nn
 
@@ -130,6 +178,7 @@ class CombinedModel(nn.Module):
     def __init__(self):
         super(CombinedModel, self).__init__()
         self.resnet_block = ResNetBlock(input_channel=64, output_channel=256)
+        self.cbam = CBAM(in_planes=256, ratio=16, kernel_size=7)
         self.convnext_block = ConvNeXtBlock(input_channel=256, output_channel=96)
         self.se_block = SEBlock(channels=96)
         self.bottleneck_transformer_block = BottleneckTransformerBlock(input_channel=96, hidden_dim=64, heads=4, output_channel=256)
@@ -139,6 +188,7 @@ class CombinedModel(nn.Module):
 
     def forward(self, x):
         x = self.resnet_block(x)
+        x = self.cbam(x)  # Apply CBAM attention
         x = self.convnext_block(x)
         x = self.se_block(x)
         x = self.bottleneck_transformer_block(x)
@@ -154,3 +204,37 @@ x = torch.randn(1, 64, 32, 32)
 output = model(x)
 print(output.shape)
 ```
+
+## Installation
+
+You can use this package by placing it in your project directory and importing the required blocks:
+
+```python
+# Option 1: Import specific blocks
+from common_neural_network_blocks import ResNetBlock, CBAM, SEBlock
+
+# Option 2: Import all blocks
+from common_neural_network_blocks import *
+
+# Option 3: Import the module
+import common_neural_network_blocks as nnb
+resnet_block = nnb.ResNetBlock(64, 256)
+```
+
+## Features
+
+- **Modular Design**: Each block is self-contained and can be used independently
+- **PyTorch Integration**: All blocks inherit from `nn.Module` for seamless integration
+- **Attention Mechanisms**: Includes state-of-the-art attention modules (CBAM, SE, etc.)
+- **Well Documented**: Comprehensive docstrings with usage examples and shape information
+- **Flexible**: Configurable parameters for different use cases
+
+## References
+
+- **ResNet**: Deep Residual Learning for Image Recognition (He et al., CVPR 2016)
+- **ConvNeXt**: A ConvNet for the 2020s (Liu et al., CVPR 2022)
+- **SE-Net**: Squeeze-and-Excitation Networks (Hu et al., CVPR 2018)
+- **CBAM**: Convolutional Block Attention Module (Woo et al., ECCV 2018)
+- **DenseNet**: Densely Connected Convolutional Networks (Huang et al., CVPR 2017)
+- **Inception**: Going Deeper with Convolutions (Szegedy et al., CVPR 2015)
+- **Transformer**: Attention Is All You Need (Vaswani et al., NeurIPS 2017)
