@@ -526,7 +526,7 @@ class ChannelAttention(nn.Module):
     channel-wise attention weights.
 
     Args:
-        in_planes (int): Number of input channels.
+        in_channels (int): Number of input channels.
         ratio (int): Reduction ratio for the hidden layer in the MLP. Default is 16.
 
     Example:
@@ -539,12 +539,12 @@ class ChannelAttention(nn.Module):
         - Output: (B, C, 1, 1) [channel attention weights]
     """
     
-    def __init__(self, in_planes, ratio=16):
+    def __init__(self, in_channels, ratio=16):
         """
         Initializes the Channel Attention Module.
 
         Args:
-            in_planes (int): Number of input channels.
+            in_channels (int): Number of input channels.
             ratio (int): Reduction ratio for the hidden layer. Default is 16.
         """
         super(ChannelAttention, self).__init__()
@@ -552,9 +552,9 @@ class ChannelAttention(nn.Module):
         self.max_pool = nn.AdaptiveMaxPool2d(1)
 
         self.shared_mlp = nn.Sequential(
-            nn.Conv2d(in_planes, in_planes // ratio, 1, bias=False),
+            nn.Conv2d(in_channels, in_channels // ratio, 1, bias=False),
             nn.ReLU(),
-            nn.Conv2d(in_planes // ratio, in_planes, 1, bias=False)
+            nn.Conv2d(in_channels // ratio, in_channels, 1, bias=False)
         )
 
         self.sigmoid = nn.Sigmoid()
@@ -598,10 +598,9 @@ class SpatialAttention(nn.Module):
     
     def __init__(self, kernel_size=7):
         """
-        Initializes the Spatial Attention Module.
-
-        Args:
-            kernel_size (int): Kernel size for the convolutional layer. Must be 3 or 7. Default is 7.        """
+        Initializes the Spatial Attention Module.        Args:
+            kernel_size (int): Kernel size for the convolutional layer. Must be 3 or 7. Default is 7.
+        """
         super(SpatialAttention, self).__init__()
         assert kernel_size in (3, 7), 'kernel size must be 3 or 7'
         padding = kernel_size // 2
@@ -623,19 +622,18 @@ class SpatialAttention(nn.Module):
         max_out, _ = torch.max(x, dim=1, keepdim=True)  # shape: (B, 1, H, W)
         avg_out = torch.mean(x, dim=1, keepdim=True)    # shape: (B, 1, H, W)
         x_cat = torch.cat([avg_out, max_out], dim=1)    # shape: (B, 2, H, W)
-        attention = self.sigmoid(self.conv(x_cat))      # shape: (B, 1, H, W)        return attention
+        attention = self.sigmoid(self.conv(x_cat))      # shape: (B, 1, H, W)
+        return attention
 
 # CBAM Module
 class CBAM(nn.Module):
     """
-    Convolutional Block Attention Module (CBAM).
-
-    CBAM is an attention mechanism that combines both channel and spatial attention 
+    Convolutional Block Attention Module (CBAM).    CBAM is an attention mechanism that combines both channel and spatial attention 
     to improve feature representation. It sequentially applies channel attention 
     followed by spatial attention to refine feature maps.
 
     Args:
-        in_planes (int): Number of input channels.
+        in_channels (int): Number of input channels.
         ratio (int): Reduction ratio for the channel attention MLP. Default is 16.
         kernel_size (int): Kernel size for the spatial attention convolution. Must be 3 or 7. Default is 7.
 
@@ -649,18 +647,19 @@ class CBAM(nn.Module):
         - Output: (B, C, H, W) [same shape as input, but with attention applied]
 
     Reference:
-        CBAM: Convolutional Block Attention Module (Woo et al., ECCV 2018)
-    """
+        CBAM: Convolutional Block Attention Module (Woo et al., ECCV 2018)    """
     
-    def __init__(self, in_planes, ratio=16, kernel_size=7):
+    def __init__(self, in_channels, ratio=16, kernel_size=7):
         """
-        Initializes the CBAM module.        Args:
-            in_planes (int): Number of input channels.
+        Initializes the CBAM module.
+        
+        Args:
+            in_channels (int): Number of input channels.
             ratio (int): Reduction ratio for the channel attention MLP. Default is 16.
             kernel_size (int): Kernel size for the spatial attention convolution. Must be 3 or 7. Default is 7.
         """
         super(CBAM, self).__init__()
-        self.channel_attention = ChannelAttention(in_planes, ratio)
+        self.channel_attention = ChannelAttention(in_channels, ratio)
         self.spatial_attention = SpatialAttention(kernel_size)
 
     def forward(self, x):

@@ -146,7 +146,7 @@ x = torch.randn(1, 64, 32, 32)
 attention_weights = channel_attn(x)  # Output shape: (1, 64, 1, 1)
 ```
 
-Number of parameters ≈ in_planes × (in_planes // ratio) × 2 (default ratio=16)
+Number of parameters ≈ in_channels × (in_channels // ratio) × 2 (default ratio=16)
 
 ### SpatialAttention
 
@@ -180,7 +180,7 @@ x = torch.randn(1, 64, 32, 32)
 output = cbam(x)  # Output shape: (1, 64, 32, 32) - same as input but with attention applied
 ```
 
-Number of parameters ≈ in_planes × (in_planes // ratio) × 2 + 2 × kernel_size²
+Number of parameters ≈ in_channels × (in_channels // ratio) × 2 + 2 × kernel_size²
 
 ## Combining Blocks
 
@@ -198,7 +198,7 @@ class CombinedModel(nn.Module):
     def __init__(self):
         super(CombinedModel, self).__init__()
         self.resnet_block = ResNetBlock(input_channel=64, output_channel=256)
-        self.cbam = CBAM(in_planes=256, ratio=16, kernel_size=7)
+        self.cbam = CBAM(in_channels=256, ratio=16, kernel_size=7)
         self.convnext_block = ConvNeXtBlock(input_channel=256, output_channel=96)
         self.se_block = SEBlock(channels=96)
         self.bottleneck_transformer_block = BottleneckTransformerBlock(input_channel=96, hidden_dim=64, heads=4, output_channel=256)
