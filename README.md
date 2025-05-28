@@ -27,6 +27,8 @@ x = torch.randn(1, 64, 32, 32)
 output = resnet_block(x)
 ```
 
+Number of parameters ≈ input_channel × 64 + 64² × 9 + 64 × output_channel
+
 ### ConvNeXtBlock
 
 Inspired by the ConvNeXt architecture, this block simplifies the ResNet-style design with modern Transformer-like components. It includes depthwise convolutions, Layer Normalization, pointwise convolutions, and residual connections to enhance feature extraction.
@@ -41,6 +43,8 @@ convnext_block = ConvNeXtBlock(input_channel=64, output_channel=96)
 x = torch.randn(1, 64, 32, 32)
 output = convnext_block(x)
 ```
+
+Number of parameters ≈ input_channel × 49 + input_channel × 384 + 384 × output_channel
 
 ### SEBlock
 
@@ -57,6 +61,8 @@ x = torch.randn(1, 64, 32, 32)
 output = se_block(x)
 ```
 
+Number of parameters ≈ channels × (channels // reduction) × 2 (default reduction=16)
+
 ### BottleneckTransformerBlock
 
 Combines convolutional layers with self-attention mechanisms to capture both local and global features, inspired by the Bottleneck Transformer architecture.
@@ -71,6 +77,8 @@ block = BottleneckTransformerBlock(input_channel=64, hidden_dim=64, heads=4, out
 x = torch.randn(1, 64, 32, 32)
 output = block(x)
 ```
+
+Number of parameters ≈ input_channel × hidden_dim + hidden_dim² × 3 + hidden_dim × output_channel
 
 ### DenseBlock
 
@@ -87,6 +95,8 @@ x = torch.randn(1, 64, 32, 32)
 output = block(x)
 ```
 
+Number of parameters ≈ $\sum_{i=0}^{\text{num\_layers}-1} (\text{input\_channel} + i \times \text{growth\_rate}) \times \text{growth\_rate} \times 9$
+
 ### InceptionBlock
 
 Implements an Inception Block, inspired by the Inception architecture. This block applies multiple convolutional layers with different kernel sizes in parallel and concatenates their outputs.
@@ -101,6 +111,8 @@ block = InceptionBlock(input_channel=64, output_channel=256)
 x = torch.randn(1, 64, 32, 32)
 output = block(x)
 ```
+
+Number of parameters ≈ input_channel × output_channel × (1 + 9 + 25) / 4
 
 ### TransformerEncoderBlock
 
@@ -117,6 +129,8 @@ x = torch.randn(32, 10, 512)  # (batch_size, sequence_length, input_dim)
 output = encoder_block(x)
 ```
 
+Number of parameters ≈ input_dim² × 4 + input_dim × ff_hidden_dim × 2 (default ff_hidden_dim=2048)
+
 ### ChannelAttention
 
 Channel Attention Module (CAM) from CBAM that implements channel attention by aggregating spatial information through both average and max pooling, then using a shared MLP to compute channel-wise attention weights.
@@ -131,6 +145,8 @@ channel_attn = ChannelAttention(64, ratio=16)
 x = torch.randn(1, 64, 32, 32)
 attention_weights = channel_attn(x)  # Output shape: (1, 64, 1, 1)
 ```
+
+Number of parameters ≈ in_planes × (in_planes // ratio) × 2 (default ratio=16)
 
 ### SpatialAttention
 
@@ -147,6 +163,8 @@ x = torch.randn(1, 64, 32, 32)
 attention_weights = spatial_attn(x)  # Output shape: (1, 1, 32, 32)
 ```
 
+Number of parameters ≈ 2 × kernel_size² (default kernel_size=7)
+
 ### CBAM
 
 Convolutional Block Attention Module (CBAM) that combines both channel and spatial attention to improve feature representation. It sequentially applies channel attention followed by spatial attention to refine feature maps.
@@ -161,6 +179,8 @@ cbam = CBAM(64, ratio=16, kernel_size=7)
 x = torch.randn(1, 64, 32, 32)
 output = cbam(x)  # Output shape: (1, 64, 32, 32) - same as input but with attention applied
 ```
+
+Number of parameters ≈ in_planes × (in_planes // ratio) × 2 + 2 × kernel_size²
 
 ## Combining Blocks
 
