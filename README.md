@@ -95,7 +95,7 @@ x = torch.randn(1, 64, 32, 32)
 output = block(x)
 ```
 
-Number of parameters ≈ $\sum_{i=0}^{\text{num\_layers}-1} (\text{input\_channel} + i \times \text{growth\_rate}) \times \text{growth\_rate} \times 9$
+Number of parameters ≈ $\sum_{i=0}^{\text{num\\_layers}-1} (\text{input\\_channel} + i \times \text{growth\\_rate}) \times \text{growth\\_rate} \times 9$
 
 ### InceptionBlock
 
